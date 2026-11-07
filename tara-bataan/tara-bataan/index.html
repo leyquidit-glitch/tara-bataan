@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tara Bataan · Resorts, food, tours and local businesses in Bataan</title>
+<meta name="description" content="Plan your Bataan trip: beach resorts in Bagac and Morong, Mt. Samat tours, seafood in Orani, pasalubong and local services across all 12 towns.">
+<meta property="og:title" content="Tara Bataan">
+<meta property="og:description" content="Resorts, food, tours and local businesses in Bataan.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="logo" href="/">Tara <span>Bataan</span></a>
+  <nav class="nav" id="nav"></nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Plan your Bataan trip</h1>
+    <p>Beach resorts, heritage tours, local food and pasalubong, from Dinalupihan to Mariveles. Featured spots are paid placements and are always labelled.</p>
+    <form class="search" id="searchForm" role="search">
+      <input id="q" type="search" placeholder="Try &quot;beach resort Bagac&quot; or &quot;seafood Orani&quot;" aria-label="Search businesses">
+      <select id="town" aria-label="Town"><option value="">All towns</option></select>
+    </form>
+    <div class="tiles" id="tiles"></div>
+    <div class="chips" id="cats" role="group" aria-label="Categories"></div>
+  </section>
+
+  <div id="loading" class="empty">Loading businesses…</div>
+  <div id="loadError" class="error" hidden></div>
+
+  <div id="curated" hidden>
+    <div id="spotWrap" hidden>
+      <div class="section-h"><h2>Spotlight</h2><small>Premium partners</small></div>
+      <div class="spot" id="spot"></div>
+    </div>
+    <div id="rows"></div>
+    <div id="guidesWrap" hidden>
+      <div class="section-h"><h2>Travel guides</h2></div>
+      <div class="guides" id="guides"></div>
+    </div>
+    <div id="localWrap" hidden>
+      <div class="section-h"><h2>Local services</h2><small>Salons, gyms, repairs and more</small></div>
+      <div class="grid" id="local"></div>
+    </div>
+  </div>
+
+  <div id="results" hidden>
+    <div class="section-h"><h2 id="resTitle">Results</h2><small id="resCount"></small></div>
+    <div class="grid" id="resGrid"></div>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <span>© Tara Bataan</span>
+  <span><a href="/list-your-business.html">List your business</a> · <a href="/login.html">Owner login</a></span>
+</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/home.js"></script>
+</body>
+</html>

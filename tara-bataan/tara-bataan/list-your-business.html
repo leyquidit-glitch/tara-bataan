@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List your business | Tara Bataan</title>
+<meta name="description" content="Get your Bataan resort, restaurant, tour or shop in front of visitors planning their trip. Free basic listing, with Featured and Premium upgrades.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="logo" href="/">Tara <span>Bataan</span></a>
+  <nav class="nav" id="nav"></nav>
+</div></header>
+
+<main class="wrap" style="display:grid;gap:20px">
+  <section class="hero">
+    <h1>Get found by people planning a Bataan trip</h1>
+    <p>Start with a free listing. Upgrade to Featured or Premium to show up above other businesses in your category.</p>
+  </section>
+  <div class="tiers" id="tiers"></div>
+  <div class="panel">
+    <h2 style="font-size:20px">How it works</h2>
+    <ol style="margin:0;padding-left:20px;display:grid;gap:6px">
+      <li>Log in with your email. We'll send you a link, no password needed.</li>
+      <li>Add your business details and a cover photo.</li>
+      <li>We check every listing before it goes live, usually within a day.</li>
+      <li>For Featured or Premium, pay by GCash and we'll switch your listing on.</li>
+    </ol>
+    <div class="actions"><a class="btn primary" href="/account.html?new=1">Add my business</a></div>
+    <p class="meta" style="margin:0">Questions? Email <span id="contactEmail"></span>.</p>
+  </div>
+</main>
+
+<footer><div class="wrap"><span>© Tara Bataan</span><span><a href="/">Explore Bataan</a></span></div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/common.js"></script>
+<script>
+  renderHeader("list");
+  $("#contactEmail").textContent = CFG.CONTACT_EMAIL;
+  $("#tiers").innerHTML = Object.entries(PLANS).map(([k,p]) => `
+    <div class="tier ${k === "featured" ? "hot" : ""}">
+      ${k === "featured" ? `<span class="badge b-featured">Most popular</span>` : ""}
+      <h3>${p.name}</h3>
+      <div class="price">${peso(p.price)}${p.price ? " <small>/ month</small>" : ""}</div>
+      <ul>${p.perks.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <a class="btn ${k === "featured" ? "primary" : ""}" href="/account.html?new=1&plan=${k}">Choose ${p.name}</a>
+    </div>`).join("");
+</script>
+</body>
+</html>
