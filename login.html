@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owner login | Tara Bataan</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="logo" href="/">Tara <span>Bataan</span></a>
+  <nav class="nav" id="nav"></nav>
+</div></header>
+<main class="wrap" style="max-width:520px">
+  <section class="hero"><h1>Log in to manage your listing</h1>
+    <p>Enter your email and we'll send you a login link. No password to remember.</p></section>
+  <form class="panel" id="loginForm" novalidate>
+    <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" required></div>
+    <button class="btn primary" type="submit">Email me a login link</button>
+    <p class="meta" id="sent" hidden style="margin:0"></p>
+  </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/common.js"></script>
+<script>
+(async () => {
+  const next = new URLSearchParams(location.search).get("next") || "/account.html";
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/account.html";
+  if (await currentProfile()) { location.href = safeNext; return; }
+  renderHeader("login");
+  $("#loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("#email").value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) { toast("Please enter a valid email address."); return; }
+    const btn = e.target.querySelector("button"); btn.disabled = true; btn.textContent = "Sending…";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + safeNext } });
+    btn.disabled = false; btn.textContent = "Email me a login link";
+    if (error) { toast(error.message.includes("rate") ? "Too many tries. Wait a minute and try again." : "We couldn't send the link. Check the email and try again."); console.error(error); return; }
+    $("#sent").hidden = false;
+    $("#sent").textContent = `Check ${email} for the login link. It can take a minute; look in Spam too.`;
+  });
+})();
+</script>
+</body>
+</html>

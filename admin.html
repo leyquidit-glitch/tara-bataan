@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | Tara Bataan</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="logo" href="/">Tara <span>Bataan</span></a>
+  <nav class="nav" id="nav"></nav>
+</div></header>
+<main class="wrap" style="display:grid;gap:18px;padding-bottom:20px">
+  <section class="hero" style="padding-bottom:0"><h1>Admin</h1><p>Approve new listings, switch on paid plans, and log payments.</p></section>
+  <div id="denied" class="error" hidden>This page is for the site admin only.</div>
+  <div id="admin" hidden style="display:grid;gap:18px">
+    <div class="stats" id="stats"></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="tw"><table><thead><tr><th>Business</th><th>Owner</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+</main>
+
+<dialog id="dlg" style="border:none;border-radius:16px;padding:0;width:min(520px,calc(100% - 24px));background:var(--card);color:var(--ink)"></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>
