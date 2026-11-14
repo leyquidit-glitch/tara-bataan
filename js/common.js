@@ -9,7 +9,7 @@ const PLANS = {
   premium:  {name:"Premium",  price:2499, perks:["Homepage Spotlight","A written feature article about your business","Shared on Tara Bataan's social pages","Everything in Featured"]}
 };
 const HUES = {stay:["#0f8b8d","#3fb8b0"], tours:["#4f8a22","#8cbf4f"], food:["#d9661a","#f6a04d"], pasalubong:["#c9184a","#e8577c"],
-              beauty:["#b5446e","#e07aa0"], fitness:["#2f7d5b","#5fb38a"], services:["#6b4a35","#a07a5c"]};
+              beauty:["#b5446e","#e07aa0"], fitness:["#2f7d5b","#5fb38a"], services:["#6b4a35","#a07a5c"], events:["#7b3fa0","#b47fd6"]};
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));

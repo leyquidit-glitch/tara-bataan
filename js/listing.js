@@ -2,7 +2,18 @@
 (function(){
   const biz = window.TB_BIZ;
   if (!biz) return;
-  renderHeader();
+  renderHeader().then(async me => {
+    if (!me || !biz.missing || !biz.missing.length) return;
+    let canEdit = me.role === "admin";
+    if (!canEdit){
+      const { data } = await sb.from("businesses").select("id").eq("id", biz.id).eq("owner_id", me.id).maybeSingle();
+      canEdit = !!data;
+    }
+    if (!canEdit) return;
+    const list = biz.missing.length > 1 ? biz.missing.slice(0, -1).join(", ") + " and " + biz.missing.slice(-1) : biz.missing[0];
+    $("#ownerNudge").innerHTML = `<div class="note"><b>Only you can see this.</b> Your page would get more calls with ${esc(list)}.
+      <a href="/account.html?edit=${encodeURIComponent(biz.id)}">Edit listing</a></div>`;
+  });
 
   // Count one view per visitor per day, so refreshes don't inflate the numbers
   const key = "tb_view_" + biz.id + "_" + new Date().toISOString().slice(0,10);
