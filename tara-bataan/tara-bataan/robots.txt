@@ -1,5 +1,0 @@
-User-agent: *
-Disallow: /account.html
-Disallow: /admin.html
-Disallow: /login.html
-Sitemap: https://tarabataan.com/sitemap.xml
