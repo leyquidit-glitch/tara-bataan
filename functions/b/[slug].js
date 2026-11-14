@@ -2,23 +2,56 @@
 import { esc, supa, safeUrl, HEAD, HEADER, FOOTER, SCRIPTS } from "../../server/shared.js";
 
 const SCHEMA_TYPE = { stay: "LodgingBusiness", food: "Restaurant", tours: "TouristAttraction", pasalubong: "Store",
-                      beauty: "BeautySalon", fitness: "ExerciseGym", services: "LocalBusiness" };
+                      beauty: "BeautySalon", fitness: "ExerciseGym", services: "LocalBusiness", events: "LocalBusiness" };
 const HUES = {stay:["#0f8b8d","#3fb8b0"], tours:["#4f8a22","#8cbf4f"], food:["#d9661a","#f6a04d"], pasalubong:["#c9184a","#e8577c"],
-              beauty:["#b5446e","#e07aa0"], fitness:["#2f7d5b","#5fb38a"], services:["#6b4a35","#a07a5c"]};
+              beauty:["#b5446e","#e07aa0"], fitness:["#2f7d5b","#5fb38a"], services:["#6b4a35","#a07a5c"], events:["#7b3fa0","#b47fd6"]};
 
 export async function onRequestGet({ params, env, request }){
   const slug = String(params.slug || "").toLowerCase();
   if (!/^[a-z0-9-]{1,80}$/.test(slug)) return notFound();
-  let b, photos = [];
+  let b, photos = [], nearby = [];
   try {
     const rows = await supa(env, `directory?slug=eq.${encodeURIComponent(slug)}&select=*&limit=1`);
     b = rows[0];
-    if (b) photos = await supa(env, `business_photos?business_id=eq.${b.id}&select=url&order=sort_order`);
+    if (b) {
+      const cols = "id,slug,name,tagline,town,category_name,category_slug,plan,plan_rank,cover_url";
+      [photos, nearby] = await Promise.all([
+        supa(env, `business_photos?business_id=eq.${b.id}&select=url&order=sort_order`),
+        supa(env, `directory?town=eq.${encodeURIComponent(b.town)}&id=neq.${b.id}&select=${cols}&order=plan_rank.desc,created_at.desc&limit=12`)
+      ]);
+      // Fall back to the same category elsewhere in Bataan if the town has nothing else yet
+      if (!nearby.length) nearby = await supa(env, `directory?category_slug=eq.${b.category_slug}&id=neq.${b.id}&select=${cols}&order=plan_rank.desc,created_at.desc&limit=6`);
+    }
   } catch (err) {
     console.error(err);
     return new Response("Something went wrong loading this page. Please try again.", { status: 502 });
   }
   if (!b) return notFound();
+
+  const sameTown = nearby.length && nearby[0].town === b.town;
+  const sameCat = nearby.filter(n => n.category_slug === b.category_slug);
+  const show = (sameTown ? [...sameCat, ...nearby.filter(n => n.category_slug !== b.category_slug)] : nearby).slice(0, 6);
+  const allSameCat = show.every(n => n.category_slug === b.category_slug);
+  const CAT_PHRASE = { stay: "places to stay", tours: "things to do", food: "places to eat", pasalubong: "pasalubong shops",
+                       beauty: "beauty spots", fitness: "gyms and fitness spots", services: "local services", events: "event hosts and venues" };
+  const nearbyTitle = sameTown
+    ? (allSameCat ? `More ${CAT_PHRASE[b.category_slug] || "businesses"} in ${b.town}` : `More to explore in ${b.town}`)
+    : `More ${CAT_PHRASE[b.category_slug] || "businesses"} in Bataan`;
+  const fallbackDesc = `${b.name} is ${/^[aeiou]/i.test(b.category_name) ? "an" : "a"} ${b.category_name.toLowerCase()} spot in ${b.town}, Bataan.` +
+    (b.address ? ` You'll find it at ${b.address}.` : "") + (b.price_range ? ` ${b.price_range}.`.replace(/\.\.$/, ".") : "");
+  const cardHTML = n => {
+    const [c1, c2] = HUES[n.category_slug] || ["#555", "#999"];
+    const ini = n.name.split(/\s+/).filter(w => /[A-Za-z]/.test(w[0] || "")).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+    const st = n.cover_url ? `background:#ddd url('${esc(n.cover_url)}') center/cover` : `background:linear-gradient(135deg,${c1},${c2})`;
+    const bd = n.plan === "premium" ? `<span class="badge b-premium">★ Premium</span>` : n.plan === "featured" ? `<span class="badge b-featured">Featured</span>` : "";
+    return `<a class="card ${n.plan !== "basic" ? "featured" : ""}" href="/b/${encodeURIComponent(n.slug)}">
+      <div class="cover" style="${st}">${n.cover_url ? "" : esc(ini)}</div>
+      <div class="txt">${bd}<div class="name">${esc(n.name)}</div><div class="meta">${esc(n.tagline || "")}</div><div class="meta">${esc(n.category_name)} · ${esc(n.town)}</div></div></a>`;
+  };
+  const missing = [
+    !b.tagline && "a one-line description", !b.description && "an About section", !b.phone && "a phone number",
+    !b.hours && "opening hours", !photos.length && "more photos", !b.cover_url && "a cover photo"
+  ].filter(Boolean);
 
   const url = new URL(request.url);
   const canonical = `${url.origin}/b/${slug}`;
@@ -70,7 +103,8 @@ ${HEADER}
       <h1>${esc(b.name)}</h1>
       ${b.tagline ? `<p class="meta" style="margin:0;font-size:18px">${esc(b.tagline)}</p>` : ""}
       ${links ? `<div class="actions">${links}</div>` : ""}
-      ${b.description ? `<div class="desc">${esc(b.description)}</div>` : ""}
+      <div id="ownerNudge"></div>
+      <div class="desc">${esc(b.description || fallbackDesc)}</div>
       ${photos.length ? `<div class="photos">${photos.map(p => `<img src="${esc(p.url)}" alt="${esc(b.name)}" loading="lazy">`).join("")}</div>` : ""}
     </article>
     <aside style="display:grid;gap:16px;align-content:start">
@@ -85,10 +119,14 @@ ${HEADER}
       </form>
     </aside>
   </div>
+  ${show.length ? `<section class="wrap" style="margin-top:36px">
+    <div class="section-h"><h2>${esc(nearbyTitle)}</h2><a class="seeall" href="/?town=${encodeURIComponent(b.town)}">See all in ${esc(b.town)} →</a></div>
+    <div class="grid">${show.map(cardHTML).join("")}</div>
+  </section>` : ""}
 </main>
 ${FOOTER}
 ${SCRIPTS}
-<script>window.TB_BIZ = ${JSON.stringify({ id: b.id, name: b.name }).replace(/</g, "\\u003c")};</script>
+<script>window.TB_BIZ = ${JSON.stringify({ id: b.id, name: b.name, missing }).replace(/</g, "\\u003c")};</script>
 <script src="/js/listing.js"></script>
 </body></html>`;
 
